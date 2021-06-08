@@ -12,6 +12,8 @@
 #include "Vehicle.h"
 #include "CameraMetaData.h"
 #include "PlanMasterController.h"
+#include <cmath>
+#include <algorithm>
 
 #include <QQmlEngine>
 
@@ -25,7 +27,21 @@ const char* CameraCalc::sideOverlapName =                   "SideOverlap";
 const char* CameraCalc::adjustedFootprintFrontalName =      "AdjustedFootprintFrontal";
 const char* CameraCalc::adjustedFootprintSideName =         "AdjustedFootprintSide";
 
+const char* CameraCalc::camposName =                 "Campos";
+const char* CameraCalc::camposSurvey2DName =         "CamposSurvey2D";
+const char* CameraCalc::camposPositionsName =        "CamposPositions";
+const char* CameraCalc::camposMinIntervalName =      "CamposMinInterval";
+const char* CameraCalc::camposRollAngleName =        "CamposRollAngle";
+const char* CameraCalc::camposPitchAngleName =       "CamposPitchAngle";
+
 const char* CameraCalc::_jsonCameraSpecTypeKey =            "CameraSpecType";
+
+const char* CameraCalc::_jsonCamposKey =                         "campos";
+const char* CameraCalc::_jsonCamposSurvey2DKey =                 "camposSurvey2D";
+const char* CameraCalc::_jsonCamposPositionsKey =                "camposPositions";
+const char* CameraCalc::_jsonCamposMinIntervalKey =              "camposMinInterval";
+const char* CameraCalc::_jsonCamposRollAngleKey =                "camposRollAngle";
+const char* CameraCalc::_jsonCamposPitchAngleKey =               "camposPitchAngle";
 
 CameraCalc::CameraCalc(PlanMasterController* masterController, const QString& settingsGroup, QObject* parent)
     : CameraSpec                    (settingsGroup, parent)
@@ -39,6 +55,13 @@ CameraCalc::CameraCalc(PlanMasterController* masterController, const QString& se
     , _sideOverlapFact              (settingsGroup, _metaDataMap[sideOverlapName])
     , _adjustedFootprintSideFact    (settingsGroup, _metaDataMap[adjustedFootprintSideName])
     , _adjustedFootprintFrontalFact (settingsGroup, _metaDataMap[adjustedFootprintFrontalName])
+
+    , _camposFact                   (settingsGroup, _metaDataMap[camposName])
+    , _camposSurvey2DFact           (settingsGroup, _metaDataMap[camposSurvey2DName])
+    , _camposPositionsFact          (settingsGroup, _metaDataMap[camposPositionsName])
+    , _camposMinIntervalFact        (settingsGroup, _metaDataMap[camposMinIntervalName])
+    , _camposRollAngleFact          (settingsGroup, _metaDataMap[camposRollAngleName])
+    , _camposPitchAngleFact         (settingsGroup, _metaDataMap[camposPitchAngleName])
 {
     QQmlEngine::setObjectOwnership(this, QQmlEngine::CppOwnership);
 
@@ -51,6 +74,13 @@ CameraCalc::CameraCalc(PlanMasterController* masterController, const QString& se
     connect(&_adjustedFootprintFrontalFact, &Fact::valueChanged,                            this, &CameraCalc::_setDirty);
     connect(&_cameraNameFact,               &Fact::valueChanged,                            this, &CameraCalc::_setDirty);
     connect(this,                           &CameraCalc::distanceToSurfaceRelativeChanged,  this, &CameraCalc::_setDirty);
+
+    connect(&_camposFact,                   &Fact::valueChanged,                            this, &CameraCalc::_setDirty);
+    connect(&_camposSurvey2DFact,           &Fact::valueChanged,                            this, &CameraCalc::_setDirty);
+    connect(&_camposPositionsFact,          &Fact::valueChanged,                            this, &CameraCalc::_setDirty);
+    connect(&_camposMinIntervalFact,        &Fact::valueChanged,                            this, &CameraCalc::_setDirty);
+    connect(&_camposRollAngleFact,          &Fact::valueChanged,                            this, &CameraCalc::_setDirty);
+    connect(&_camposPitchAngleFact,         &Fact::valueChanged,                            this, &CameraCalc::_setDirty);
 
     connect(&_cameraNameFact,               &Fact::valueChanged,                            this, &CameraCalc::_cameraNameChanged);
     connect(&_cameraNameFact,               &Fact::valueChanged,                            this, &CameraCalc::isManualCameraChanged);
@@ -66,6 +96,13 @@ CameraCalc::CameraCalc(PlanMasterController* masterController, const QString& se
     connect(imageHeight(),              &Fact::rawValueChanged, this, &CameraCalc::_recalcTriggerDistance);
     connect(focalLength(),              &Fact::rawValueChanged, this, &CameraCalc::_recalcTriggerDistance);
     connect(landscape(),                &Fact::rawValueChanged, this, &CameraCalc::_recalcTriggerDistance);
+
+    connect(&_camposFact,               &Fact::rawValueChanged, this, &CameraCalc::_recalcTriggerDistance);
+    connect(&_camposSurvey2DFact,       &Fact::rawValueChanged, this, &CameraCalc::_recalcTriggerDistance);
+    connect(&_camposPositionsFact,      &Fact::rawValueChanged, this, &CameraCalc::_recalcTriggerDistance);
+    connect(&_camposMinIntervalFact,    &Fact::rawValueChanged, this, &CameraCalc::_recalcTriggerDistance);
+    connect(&_camposRollAngleFact,      &Fact::rawValueChanged, this, &CameraCalc::_recalcTriggerDistance);
+    connect(&_camposPitchAngleFact,     &Fact::rawValueChanged, this, &CameraCalc::_recalcTriggerDistance);
 
     // Build the brand list from known cameras
     _cameraBrandList.append(xlatManualCameraName());
@@ -162,8 +199,17 @@ void CameraCalc::_recalcTriggerDistance(void)
 
     if (_valueSetIsDistanceFact.rawValue().toBool()) {
         _imageDensityFact.setRawValue((_distanceToSurfaceFact.rawValue().toDouble() * sensorWidth * 100.0) / (imageWidth * focalLength));
-    } else {
+    } else if (!_camposFact.rawValue().toBool() || !_camposSurvey2DFact.rawValue().toBool()){
         _distanceToSurfaceFact.setRawValue((imageWidth * _imageDensityFact.rawValue().toDouble() * focalLength) / (sensorWidth * 100.0));
+    } else {
+        //this guarantees that the pixels in the used area of the image (the complement of sidelap) are <= GSD
+        //height will vary as it tries to keep only the used area below the set GSD
+        double halfAOV = std::min(atan(sensorWidth / (2.0 * focalLength)) + _camposRollAngleFact.rawValue().toDouble() * M_PI / 180.0, 75.0 * M_PI / 180.0);
+        double GSD = _imageDensityFact.rawValue().toDouble()/100.0;
+        double sidelap = _sideOverlapFact.rawValue().toDouble()/100.0;
+        double pixelAngle = 2.0 * atan(sensorWidth / (2.0 * focalLength)) / imageWidth;
+        double height = GSD / (tan(atan((1-sidelap)*tan(halfAOV))+pixelAngle)-((1-sidelap)*tan(halfAOV)));
+        _distanceToSurfaceFact.setRawValue(height);
     }
 
     imageDensity = _imageDensityFact.rawValue().toDouble();
@@ -175,6 +221,22 @@ void CameraCalc::_recalcTriggerDistance(void)
         _imageFootprintSide  =      (imageHeight * imageDensity) / 100.0;
         _imageFootprintFrontal =    (imageWidth  * imageDensity) / 100.0;
     }
+
+    if (_camposFact.rawValue().toBool() && _camposSurvey2DFact.rawValue().toBool()) {
+        //find half the angle of view, accounting for the additional roll angles, upper bounded for a 150° AoV camera, as with greater values the GSD at the extremes decays too rapidly.
+        double halfAOV = std::min(atan(sensorWidth / (2.0 * focalLength)) + _camposRollAngleFact.rawValue().toDouble() * M_PI / 180.0, 75.0 * M_PI / 180.0);
+
+        //compute the adjusted horizontal field of view with the addition of the roll angle set
+        double camposHFOV = 2 * tan(halfAOV) * _distanceToSurfaceFact.rawValue().toDouble();
+
+        _imageFootprintSide = camposHFOV;
+
+        double halfVerticalAOV = atan(sensorHeight / (2.0 * focalLength));
+
+        //compute the frontal footprint from height and angle and divide by the number of positions.
+        _imageFootprintFrontal = 2 * tan(halfVerticalAOV) * _distanceToSurfaceFact.rawValue().toDouble() / _camposPositionsFact.rawValue().toDouble();
+    }
+
     _adjustedFootprintSideFact.setRawValue      (_imageFootprintSide * ((100.0 - _sideOverlapFact.rawValue().toDouble()) / 100.0));
     _adjustedFootprintFrontalFact.setRawValue   (_imageFootprintFrontal * ((100.0 - _frontalOverlapFact.rawValue().toDouble()) / 100.0));
 
@@ -192,6 +254,13 @@ void CameraCalc::save(QJsonObject& json) const
     json[distanceToSurfaceName] =           _distanceToSurfaceFact.rawValue().toDouble();
     json[distanceToSurfaceRelativeName] =   _distanceToSurfaceRelative;
     json[cameraNameName] =                  _cameraNameFact.rawValue().toString();
+
+    json[_jsonCamposKey] =                  _camposFact.rawValue().toBool();
+    json[_jsonCamposSurvey2DKey] =          _camposSurvey2DFact.rawValue().toBool();
+    json[_jsonCamposPositionsKey] =         _camposPositionsFact.rawValue().toInt();
+    json[_jsonCamposMinIntervalKey] =       _camposMinIntervalFact.rawValue().toInt();
+    json[_jsonCamposRollAngleKey] =         _camposRollAngleFact.rawValue().toDouble();
+    json[_jsonCamposPitchAngleKey] =        _camposPitchAngleFact.rawValue().toDouble();
 
     if (!isManualCamera()) {
         CameraSpec::save(json);
@@ -233,6 +302,13 @@ bool CameraCalc::load(const QJsonObject& json, QString& errorString)
         { adjustedFootprintFrontalName,     QJsonValue::Double, true },
         { distanceToSurfaceName,            QJsonValue::Double, true },
         { distanceToSurfaceRelativeName,    QJsonValue::Bool,   true },
+        
+        { _jsonCamposKey,                   QJsonValue::Bool,   false },
+        { _jsonCamposSurvey2DKey,           QJsonValue::Bool,   false },
+        { _jsonCamposPositionsKey,          QJsonValue::Double, false },
+        { _jsonCamposMinIntervalKey,        QJsonValue::Double, false },
+        { _jsonCamposRollAngleKey,          QJsonValue::Double, false },
+        { _jsonCamposPitchAngleKey,         QJsonValue::Double, false },
     };
     if (!JsonHelper::validateKeys(v1Json, keyInfoList1, errorString)) {
         return false;

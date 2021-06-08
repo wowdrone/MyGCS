@@ -808,7 +808,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <extracomment>.mavCmdInfo[MAV_CMD_DO_SET_ROI_LOCATION].category, .mavCmdInfo[MAV_CMD_DO_SET_ROI_WPNEXT_OFFSET].category, .mavCmdInfo[MAV_CMD_DO_SET_ROI_NONE].category, .mavCmdInfo[MAV_CMD_DO_SET_ROI].category, .mavCmdInfo[MAV_CMD_DO_DIGICAM_CONFIGURE].category, .mavCmdInfo[MAV_CMD_DO_DIGICAM_CONTROL].category, .mavCmdInfo[MAV_CMD_DO_SET_CAM_TRIGG_DIST].category, .mavCmdInfo[MAV_CMD_SET_CAMERA_MODE].category, .mavCmdInfo[MAV_CMD_IMAGE_START_CAPTURE].category, .mavCmdInfo[MAV_CMD_IMAGE_STOP_CAPTURE].category, .mavCmdInfo[MAV_CMD_VIDEO_START_CAPTURE].category, .mavCmdInfo[MAV_CMD_VIDEO_STOP_CAPTURE].category, </extracomment>
+        <extracomment>.mavCmdInfo[MAV_CMD_DO_SET_ROI_LOCATION].category, .mavCmdInfo[MAV_CMD_DO_SET_ROI_WPNEXT_OFFSET].category, .mavCmdInfo[MAV_CMD_DO_SET_ROI_NONE].category, .mavCmdInfo[MAV_CMD_DO_SET_ROI].category, .mavCmdInfo[MAV_CMD_DO_DIGICAM_CONFIGURE].category, .mavCmdInfo[MAV_CMD_DO_DIGICAM_CONTROL].category, .mavCmdInfo[MAV_CMD_DO_SET_CAM_TRIGG_DIST].category, .mavCmdInfo[MAV_CMD_OBLIQUE_SURVEY].category, .mavCmdInfo[MAV_CMD_SET_CAMERA_MODE].category, .mavCmdInfo[MAV_CMD_IMAGE_START_CAPTURE].category, .mavCmdInfo[MAV_CMD_IMAGE_STOP_CAPTURE].category, .mavCmdInfo[MAV_CMD_VIDEO_START_CAPTURE].category, .mavCmdInfo[MAV_CMD_VIDEO_STOP_CAPTURE].category, </extracomment>
         <location filename="../src/MissionManager/MavCmdInfoCommon.json"/>
         <source>Camera</source>
         <translation type="unfinished"></translation>
@@ -1075,6 +1075,42 @@
         <extracomment>.mavCmdInfo[MAV_CMD_DO_SET_CAM_TRIGG_DIST].param3.enumStrings, </extracomment>
         <location filename="../src/MissionManager/MavCmdInfoCommon.json"/>
         <source>No Trigger,Once Immediately</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <extracomment>.mavCmdInfo[MAV_CMD_OBLIQUE_SURVEY].friendlyName, </extracomment>
+        <location filename="../src/MissionManager/MavCmdInfoCommon.json"/>
+        <source>Oblique Survey</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <extracomment>.mavCmdInfo[MAV_CMD_OBLIQUE_SURVEY].description, </extracomment>
+        <location filename="../src/MissionManager/MavCmdInfoCommon.json"/>
+        <source>Set Oblique Survey.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <extracomment>.mavCmdInfo[MAV_CMD_OBLIQUE_SURVEY].param2.label, </extracomment>
+        <location filename="../src/MissionManager/MavCmdInfoCommon.json"/>
+        <source>Shutter</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <extracomment>.mavCmdInfo[MAV_CMD_OBLIQUE_SURVEY].param3.label, </extracomment>
+        <location filename="../src/MissionManager/MavCmdInfoCommon.json"/>
+        <source>Min Interval</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <extracomment>.mavCmdInfo[MAV_CMD_CONDITION_DISTANCE].param1.label, .mavCmdInfo[MAV_CMD_OBLIQUE_SURVEY].param1.label, </extracomment>
+        <location filename="../src/MissionManager/MavCmdInfoCommon.json"/>
+        <source>Distance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <extracomment>.mavCmdInfo[MAV_CMD_OBLIQUE_SURVEY].param3.label, .mavCmdInfo[MAV_CMD_DO_PARACHUTE].param1.label, </extracomment>
+        <location filename="../src/MissionManager/MavCmdInfoCommon.json"/>
+        <source>Min Interval</source>
         <translation type="unfinished"></translation>
     </message>
     <message>

@@ -875,6 +875,9 @@ int TransectStyleComplexItem::lastSequenceNumber(void) const
         int                         itemCount   = 0;
         BuildMissionItemsState_t    buildState  = _buildMissionItemsState();
 
+        // +2 to account for the leading and trailing DO_MOUNT_CONTROL
+        itemCount += 2;
+
         // Important Note: This code should match the logic in _buildAndAppendMissionItems
         for (int coordIndex=0; coordIndex<_rgFlightPathCoordInfo.count(); coordIndex++) {
             const CoordInfo_t& coordInfo = _rgFlightPathCoordInfo[coordIndex];
@@ -1016,7 +1019,23 @@ void TransectStyleComplexItem::_appendConditionGate(QList<MissionItem*>& items, 
 
 void TransectStyleComplexItem::_appendCameraTriggerDistance(QList<MissionItem*>& items, QObject* missionItemParent, int& seqNum, float triggerDistance)
 {
-    MissionItem* item = new MissionItem(seqNum++,
+    MissionItem* item ;
+    if (_cameraCalc.campos()->rawValue().toBool()) {
+        item = new MissionItem(seqNum++,
+                                        MAV_CMD_OBLIQUE_SURVEY,
+                                        MAV_FRAME_MISSION,
+                                        triggerDistance,
+                                        0,                                                      // shutter integration (ignore)
+                                        _cameraCalc.camposMinInterval()->rawValue().toInt(),    // The minimum interval in which the camera is capable of taking subsequent pictures repeatedly. 0 to ignore.
+                                        _cameraCalc.camposPositions()->rawValue().toInt(),      // number of positions to be used in CAMPOS mode
+                                        _cameraCalc.camposRollAngle()->rawValue().toDouble(),   // the angle limits to roll the camera to left and right of neutral
+                                        -_cameraCalc.camposPitchAngle()->rawValue().toDouble(), // the fixed pitch angle
+                                        0,                                                      // param7 - unused
+                                        true,                                                   // autoContinue
+                                        false,                                                  // isCurrentItem
+                                        missionItemParent);        
+    } else {
+        item = new MissionItem(seqNum++,
                                         MAV_CMD_DO_SET_CAM_TRIGG_DIST,
                                         MAV_FRAME_MISSION,
                                         triggerDistance,
@@ -1026,6 +1045,7 @@ void TransectStyleComplexItem::_appendCameraTriggerDistance(QList<MissionItem*>&
                                         true,                           // autoContinue
                                         false,                          // isCurrentItem
                                         missionItemParent);
+    }
     items.append(item);
 }
 
@@ -1053,6 +1073,22 @@ TransectStyleComplexItem::BuildMissionItemsState_t TransectStyleComplexItem::_bu
     return state;
 }
 
+void TransectStyleComplexItem::_appendCameraMountPitchItem(QList<MissionItem*>& items, QObject* missionItemParent, int& seqNum, int pitch)
+{
+    MissionItem* item = new MissionItem(seqNum++,
+                                        MAV_CMD_DO_MOUNT_CONTROL,
+                                        MAV_FRAME_MISSION,
+                                        pitch,
+                                        0,
+                                        0,
+                                        0, 0, 0,                                // param 4-6 not used
+                                        MAV_MOUNT_MODE_MAVLINK_TARGETING,
+                                        true,                                   // autoContinue
+                                        false,                                  // isCurrentItem
+                                        missionItemParent);
+    items.append(item);
+}
+
 void TransectStyleComplexItem::_buildAndAppendMissionItems(QList<MissionItem*>& items, QObject* missionItemParent)
 {
     int                         seqNum      = _sequenceNumber;
@@ -1060,6 +1096,9 @@ void TransectStyleComplexItem::_buildAndAppendMissionItems(QList<MissionItem*>& 
     MAV_FRAME                   mavFrame    = followTerrain() || !_cameraCalc.distanceToSurfaceRelative() ? MAV_FRAME_GLOBAL : MAV_FRAME_GLOBAL_RELATIVE_ALT;
 
     qCDebug(TransectStyleComplexItemLog) << "_buildAndAppendMissionItems";
+
+    // Pòint the camera down before the survey
+    _appendCameraMountPitchItem(items, missionItemParent, seqNum, -90);
 
     // Note: The code below is written to be understable as oppose to being compact and/or remove all duplicate code
     for (int coordIndex=0; coordIndex<_rgFlightPathCoordInfo.count(); coordIndex++) {
@@ -1117,6 +1156,7 @@ void TransectStyleComplexItem::_buildAndAppendMissionItems(QList<MissionItem*>& 
             break;
         }
     }
+    _appendCameraMountPitchItem(items, missionItemParent, seqNum, 0);
 }
 
 void TransectStyleComplexItem::_appendLoadedMissionItems(QList<MissionItem*>& items, QObject* missionItemParent)
