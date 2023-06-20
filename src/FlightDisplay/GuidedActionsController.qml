@@ -105,6 +105,7 @@ Item {
     readonly property int actionActionList:                 23
     readonly property int actionForceArm:                   24
     readonly property int actionChangeSpeed:                25
+    readonly property int actionVtolTakeoff:                26
 
     property var    _activeVehicle:             QGroundControl.multiVehicleManager.activeVehicle
     property bool   _useChecklist:              QGroundControl.settingsManager.appSettings.useChecklist.rawValue && QGroundControl.corePlugin.options.preFlightChecklistUrl.toString().length
@@ -133,6 +134,7 @@ Item {
     property bool showActionList:       _guidedActionsEnabled && (showStartMission || showResumeMission || showChangeAlt || showLandAbort || actionList.hasCustomActions)
     property string changeSpeedTitle:   _fixedWing ? changeAirspeedTitle : changeCruiseSpeedTitle
     property string changeSpeedMessage: _fixedWing ? changeAirspeedMessage : changeCruiseSpeedMessage
+    property bool showVtolTakeoff:      _guidedActionsEnabled && _activeVehicle.vtol && _activeVehicle.supportsGuidedActionVtolTakeoff
 
     // Note: The '_missionItemCount - 2' is a hack to not trigger resume mission when a mission ends with an RTL item
     property bool showResumeMission:    _activeVehicle && !_vehicleArmed && _vehicleWasFlying && _missionAvailable && _resumeMissionIndex > 0 && (_resumeMissionIndex < _missionItemCount - 2)
@@ -171,6 +173,12 @@ Item {
     property bool __orbitSupported:         _activeVehicle ? !_hideOrbit && _activeVehicle.orbitModeSupported : false
     property bool __flightMode:             _flightMode
 
+    property var vtolTakeoffLoiterCoordinate: null
+
+    signal showVtolTakeoffLoiter
+    signal vtolTakeoffExecuted
+    signal actionCancelled
+
     function _outputState() {
         if (_corePlugin.guidedActionsControllerLogging()) {
             console.log(qsTr("_activeVehicle(%1) _vehicleArmed(%2) guidedModeSupported(%3) _vehicleFlying(%4) _vehicleWasFlying(%5) _vehicleInRTLMode(%6) pauseVehicleSupported(%7) _vehiclePaused(%8) _flightMode(%9) _missionItemCount(%10) roiSupported(%11) orbitSupported(%12) _missionActive(%13) _hideROI(%14) _hideOrbit(%15)").arg(_activeVehicle ? 1 : 0).arg(_vehicleArmed ? 1 : 0).arg(__guidedModeSupported ? 1 : 0).arg(_vehicleFlying ? 1 : 0).arg(_vehicleWasFlying ? 1 : 0).arg(_vehicleInRTLMode ? 1 : 0).arg(__pauseVehicleSupported ? 1 : 0).arg(_vehiclePaused ? 1 : 0).arg(_flightMode).arg(_missionItemCount).arg(__roiSupported).arg(__orbitSupported).arg(_missionActive).arg(_hideROI).arg(_hideOrbit))
@@ -181,7 +189,7 @@ Item {
         // generic defaults
         guidedValueSlider.configureAsLinearSlider()
 
-        if (actionCode === actionTakeoff) {
+        if (actionCode === actionTakeoff || actionCode === actionVtolTakeoff) {
                 guidedValueSlider.setMinVal(_activeVehicle.minimumTakeoffAltitude())
                 guidedValueSlider.setValue(_activeVehicle ? _activeVehicle.minimumTakeoffAltitude() : 0)
                 guidedValueSlider.setDisplayText("Height")
@@ -496,6 +504,14 @@ Item {
             confirmDialog.message = changeSpeedMessage
             guidedValueSlider.visible = true
             break
+        case actionVtolTakeoff:
+            confirmDialog.title = takeoffTitle
+            confirmDialog.message = takeoffMessage
+            confirmDialog.hideTrigger = Qt.binding(function() { return !showTakeoff })
+            guidedValueSlider.visible = true
+            showVtolTakeoffLoiter()
+            break;
+
         default:
             console.warn("Unknown actionCode", actionCode)
             return
@@ -584,6 +600,9 @@ Item {
                     _activeVehicle.guidedModeChangeGroundSpeed(sliderOutputValue)
                 }
             }
+        case actionVtolTakeoff:
+            _activeVehicle.guidedModeVtolTakeoff(sliderOutputValue, vtolTakeoffLoiterCoordinate.latitude, vtolTakeoffLoiterCoordinate.longitude)
+            vtolTakeoffExecuted()
             break
         default:
             console.warn(qsTr("Internal error: unknown actionCode"), actionCode)

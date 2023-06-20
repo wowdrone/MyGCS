@@ -2549,6 +2549,11 @@ bool Vehicle::supportsMotorInterference() const
     return _firmwarePlugin->supportsMotorInterference();
 }
 
+bool Vehicle::supportsGuidedActionVtolTakeoff() const
+{
+    return _firmwarePlugin->supportsGuidedActionVtolTakeoff();
+}
+
 bool Vehicle::supportsTerrainFrame() const
 {
     return !px4Firmware();
@@ -2685,6 +2690,15 @@ void Vehicle::guidedModeTakeoff(double altitudeRelative)
         return;
     }
     _firmwarePlugin->guidedModeTakeoff(this, altitudeRelative);
+}
+
+void Vehicle::guidedModeVtolTakeoff(double transAltRelative, double lat_loiter, double lon_loiter)
+{
+    if (!guidedModeSupported()) {
+        qgcApp()->showAppMessage(guided_mode_not_supported_by_vehicle);
+        return;
+    }
+    _firmwarePlugin->guidedModeVtolTakeoff(this, transAltRelative, lat_loiter, lon_loiter);
 }
 
 double Vehicle::minimumTakeoffAltitude()
@@ -3705,6 +3719,11 @@ QString Vehicle::followFlightMode() const
     return _firmwarePlugin->followFlightMode();
 }
 
+QString Vehicle::vtolTakeoffFlightMode() const
+{
+    return _firmwarePlugin->vtolTakeoffFlightMode();
+}
+
 QString Vehicle::vehicleImageOpaque() const
 {
     if(_firmwarePlugin)
@@ -3913,6 +3932,11 @@ void Vehicle::sendPlan(QString planFile)
 QString Vehicle::hobbsMeter()
 {
     return _firmwarePlugin->getHobbsMeter(this);
+}
+
+double Vehicle::loiterRadius()
+{
+    return _firmwarePlugin->getDefaultLoiterRadius(this);
 }
 
 void Vehicle::_vehicleParamLoaded(bool ready)

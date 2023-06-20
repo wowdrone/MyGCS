@@ -42,6 +42,7 @@ public:
     QString             takeControlFlightMode           (void) const override { return _manualFlightMode; }
     QString             gotoFlightMode                  (void) const override { return _holdFlightMode; }
     QString             followFlightMode                (void) const override { return _followMeFlightMode; };
+    QString             vtolTakeoffFlightMode           (void) const override { return _vtolTakeoffFlightMode; }
     void                pauseVehicle                    (Vehicle* vehicle) override;
     void                guidedModeRTL                   (Vehicle* vehicle, bool smartRTL) override;
     void                guidedModeLand                  (Vehicle* vehicle) override;
@@ -51,6 +52,7 @@ public:
     double              minimumEquivalentAirspeed(Vehicle* vehicle) override;
     bool                mulirotorSpeedLimitsAvailable(Vehicle* vehicle) override;
     bool                fixedWingAirSpeedLimitsAvailable(Vehicle* vehicle) override;
+    void                guidedModeVtolTakeoff           (Vehicle* vehicle, double takeoffAltRel, double lat, double lon) override;
     void                guidedModeGotoLocation          (Vehicle* vehicle, const QGeoCoordinate& gotoCoord) override;
     void                guidedModeChangeAltitude        (Vehicle* vehicle, double altitudeRel, bool pauseVehicle) override;
     void                guidedModeChangeGroundSpeed      (Vehicle* vehicle, double groundspeed) override;
@@ -71,7 +73,9 @@ public:
     QString             autoDisarmParameter             (Vehicle* vehicle) override { Q_UNUSED(vehicle); return QStringLiteral("COM_DISARM_LAND"); }
     uint32_t            highLatencyCustomModeTo32Bits   (uint16_t hlCustomMode) override;
     bool                supportsNegativeThrust          (Vehicle* vehicle) override;
+    bool                supportsGuidedActionVtolTakeoff () override { return true;};
     QString             getHobbsMeter                   (Vehicle* vehicle) override;
+    double              getDefaultLoiterRadius          (Vehicle* vehicle) override;
 
 protected:
     typedef struct {
@@ -107,6 +111,7 @@ protected:
     QString _followMeFlightMode;
     QString _simpleFlightMode;
     QString _orbitFlightMode;
+    QString _vtolTakeoffFlightMode;
 
 private slots:
     void _mavCommandResult(int vehicleId, int component, int command, int result, bool noReponseFromVehicle);

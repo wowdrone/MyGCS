@@ -51,6 +51,7 @@ PX4FirmwarePlugin::PX4FirmwarePlugin()
     , _followMeFlightMode   (tr("Follow Me"))
     , _simpleFlightMode     (tr("Simple"))
     , _orbitFlightMode      (tr("Orbit"))
+    , _vtolTakeoffFlightMode(tr("VTOL Takeoff"))
 {
     qmlRegisterType<PX4SimpleFlightModesController>     ("QGroundControl.Controllers", 1, 0, "PX4SimpleFlightModesController");
     qmlRegisterType<AirframeComponentController>        ("QGroundControl.Controllers", 1, 0, "AirframeComponentController");
@@ -85,6 +86,7 @@ PX4FirmwarePlugin::PX4FirmwarePlugin()
         { PX4_CUSTOM_MAIN_MODE_AUTO,        PX4_CUSTOM_SUB_MODE_AUTO_READY,         false,  true,   true },
         { PX4_CUSTOM_MAIN_MODE_AUTO,        PX4_CUSTOM_SUB_MODE_AUTO_RTGS,          false,  true,   true },
         { PX4_CUSTOM_MAIN_MODE_AUTO,        PX4_CUSTOM_SUB_MODE_AUTO_TAKEOFF,       false,  true,   true },
+        { PX4_CUSTOM_MAIN_MODE_AUTO,        PX4_CUSTOM_SUB_MODE_AUTO_VTOL_TAKEOFF,  false,  false,  true }
     };
 
     // Must be in same order as above structure
@@ -107,6 +109,7 @@ PX4FirmwarePlugin::PX4FirmwarePlugin()
         &_readyFlightMode,
         &_rtgsFlightMode,
         &_takeoffFlightMode,
+        &_vtolTakeoffFlightMode
     };
 
     // Convert static information to dynamic list. This allows for plugin override class to manipulate list.
@@ -379,7 +382,7 @@ void PX4FirmwarePlugin::_mavCommandResult(int vehicleId, int component, int comm
         return;
     }
 
-    if (command == MAV_CMD_NAV_TAKEOFF && result == MAV_RESULT_ACCEPTED) {
+    if ((command == MAV_CMD_NAV_TAKEOFF || command == MAV_CMD_NAV_VTOL_TAKEOFF) && result == MAV_RESULT_ACCEPTED) {
         // Now that we are in takeoff mode we can arm the vehicle which will cause it to takeoff.
         // We specifically don't retry arming if it fails. This way we don't fight with the user if
         // They are trying to disarm.
@@ -387,6 +390,10 @@ void PX4FirmwarePlugin::_mavCommandResult(int vehicleId, int component, int comm
         if (!vehicle->armed()) {
             vehicle->setArmedShowError(true);
         }
+    }
+
+    if (command == MAV_CMD_NAV_VTOL_TAKEOFF) {
+        vehicle->publishVtolTakeoffResult(result == MAV_RESULT_ACCEPTED);
     }
 }
 
@@ -453,6 +460,27 @@ bool PX4FirmwarePlugin::fixedWingAirSpeedLimitsAvailable(Vehicle* vehicle)
 {
     return vehicle->parameterManager()->parameterExists(FactSystem::defaultComponentId, "FW_AIRSPD_MIN") &&
             vehicle->parameterManager()->parameterExists(FactSystem::defaultComponentId, "FW_AIRSPD_MAX");
+}
+
+void PX4FirmwarePlugin::guidedModeVtolTakeoff(Vehicle* vehicle, double takeoffAltRel, double lat, double lon)
+{
+    double vehicleAltitudeAMSL = vehicle->altitudeAMSL()->rawValue().toDouble();
+    if (qIsNaN(vehicleAltitudeAMSL)) {
+        qgcApp()->showAppMessage(tr("Unable to takeoff, vehicle position not known."));
+        return;
+    }
+
+    double takeoffAltAMSL = takeoffAltRel + vehicleAltitudeAMSL;
+
+    connect(vehicle, &Vehicle::mavCommandResult, this, &PX4FirmwarePlugin::_mavCommandResult);
+    vehicle->sendMavCommand(
+        vehicle->defaultComponentId(),
+        MAV_CMD_NAV_VTOL_TAKEOFF,
+        true,                                   // show error is fails
+        NAN,NAN,NAN,NAN,                                     // params 1-4
+        lat,
+        lon,
+        static_cast<float>(takeoffAltAMSL));    // AMSL altitude
 }
 
 void PX4FirmwarePlugin::guidedModeGotoLocation(Vehicle* vehicle, const QGeoCoordinate& gotoCoord)
@@ -727,4 +755,15 @@ QString PX4FirmwarePlugin::getHobbsMeter(Vehicle* vehicle)
     QString timeStr = QString::asprintf("%04d:%02d:%02d", hours, minutes, seconds);
     qCDebug(VehicleLog) << "Hobbs Meter string:" << timeStr;
     return timeStr;
+} 
+
+double PX4FirmwarePlugin::getDefaultLoiterRadius(Vehicle* vehicle)
+{
+    static const char* LOITER_RADIUS = "NAV_LOITER_RAD";
+
+    if (vehicle->parameterManager()->parameterExists(FactSystem::defaultComponentId, LOITER_RADIUS)) {
+        return vehicle->parameterManager()->getParameter(FactSystem::defaultComponentId, LOITER_RADIUS)->rawValue().toDouble();
+    }
+
+    return FirmwarePlugin::getDefaultLoiterRadius(vehicle);
 }

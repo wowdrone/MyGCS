@@ -122,6 +122,8 @@ public:
     /// Returns the flight mode to use when the operator wants to take back control from autonomouse flight.
     virtual QString takeControlFlightMode(void) const { return QString(); }
 
+    virtual QString vtolTakeoffFlightMode(void) const { return QString(); }
+
     /// Returns whether the vehicle is in guided mode or not.
     virtual bool isGuidedMode(const Vehicle* vehicle) const;
 
@@ -146,6 +148,9 @@ public:
 
     /// Command vehicle to takeoff from current location to a firmware specific height.
     virtual void guidedModeTakeoff(Vehicle* vehicle, double takeoffAltRel);
+
+    /// Command vehicle to do a vtol takeoff.
+    virtual void guidedModeVtolTakeoff(Vehicle* vehicle, double takeoffAltRel, double lat, double lon);
 
     /// @return The minimum takeoff altitude (relative) for guided takeoff.
     virtual double minimumTakeoffAltitude(Vehicle* /*vehicle*/) { return 10; }
@@ -208,6 +213,9 @@ public:
     /// Returns true if the firmware supports calibrating motor interference offsets for the compass
     /// (CompassMot). Default is true.
     virtual bool supportsMotorInterference(void);
+
+    /// Returns true if the firmware supports the VTOL takeoff guided action
+    virtual bool supportsGuidedActionVtolTakeoff ();
 
     /// Called before any mavlink message is processed by Vehicle such that the firmwre plugin
     /// can adjust any message characteristics. This is handy to adjust or differences in mavlink
@@ -356,6 +364,8 @@ public:
 
     // gets hobbs meter from autopilot. This should be reimplmeented for each firmware
     virtual QString getHobbsMeter(Vehicle* vehicle) { Q_UNUSED(vehicle); return "Not Supported"; }
+
+    virtual double getDefaultLoiterRadius(Vehicle* vehicle) { Q_UNUSED(vehicle); return 0; }
 
     /// Creates Autotune object.
     virtual Autotune* createAutotune(Vehicle *vehicle);

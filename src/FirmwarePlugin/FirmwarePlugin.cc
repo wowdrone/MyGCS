@@ -149,6 +149,11 @@ bool FirmwarePlugin::supportsMotorInterference(void)
     return true;
 }
 
+bool FirmwarePlugin::supportsGuidedActionVtolTakeoff(void)
+{
+    return false;
+}
+
 bool FirmwarePlugin::supportsJSButton(void)
 {
     return false;
@@ -257,6 +262,16 @@ void FirmwarePlugin::guidedModeTakeoff(Vehicle* vehicle, double takeoffAltRel)
     // Not supported by generic vehicle
     Q_UNUSED(vehicle);
     Q_UNUSED(takeoffAltRel);
+    qgcApp()->showAppMessage(guided_mode_not_supported_by_vehicle);
+}
+
+void FirmwarePlugin::guidedModeVtolTakeoff(Vehicle* vehicle, double takeoffAltRel, double lat, double lon)
+{
+    // Not supported by generic vehicle
+    Q_UNUSED(vehicle);
+    Q_UNUSED(takeoffAltRel);
+    Q_UNUSED(lat);
+    Q_UNUSED(lon);
     qgcApp()->showAppMessage(guided_mode_not_supported_by_vehicle);
 }
 

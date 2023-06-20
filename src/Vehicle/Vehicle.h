@@ -202,6 +202,7 @@ public:
     Q_PROPERTY(bool                 supportsJSButton            READ supportsJSButton                                               CONSTANT)
     Q_PROPERTY(bool                 supportsRadio               READ supportsRadio                                                  CONSTANT)
     Q_PROPERTY(bool               supportsMotorInterference     READ supportsMotorInterference                                      CONSTANT)
+    Q_PROPERTY(bool                 supportsGuidedActionVtolTakeoff READ supportsGuidedActionVtolTakeoff                            CONSTANT)
     Q_PROPERTY(QString              prearmError                 READ prearmError                WRITE setPrearmError                NOTIFY prearmErrorChanged)
     Q_PROPERTY(int                  motorCount                  READ motorCount                                                     CONSTANT)
     Q_PROPERTY(bool                 coaxialMotors               READ coaxialMotors                                                  CONSTANT)
@@ -221,6 +222,7 @@ public:
     Q_PROPERTY(QString              landFlightMode              READ landFlightMode                                                 CONSTANT)
     Q_PROPERTY(QString              takeControlFlightMode       READ takeControlFlightMode                                          CONSTANT)
     Q_PROPERTY(QString              followFlightMode            READ followFlightMode                                               CONSTANT)
+    Q_PROPERTY(QString              vtolTakeoffFlightMode       READ vtolTakeoffFlightMode                                          CONSTANT)
     Q_PROPERTY(QString              firmwareTypeString          READ firmwareTypeString                                             NOTIFY firmwareTypeChanged)
     Q_PROPERTY(QString              vehicleTypeString           READ vehicleTypeString                                              NOTIFY vehicleTypeChanged)
     Q_PROPERTY(QString              vehicleImageOpaque          READ vehicleImageOpaque                                             CONSTANT)
@@ -258,6 +260,7 @@ public:
     Q_PROPERTY(bool                 requiresGpsFix              READ requiresGpsFix                                                 NOTIFY requiresGpsFixChanged)
     Q_PROPERTY(double               loadProgress                READ loadProgress                                                   NOTIFY loadProgressChanged)
     Q_PROPERTY(bool                 initialConnectComplete      READ isInitialConnectComplete                                       NOTIFY initialConnectComplete)
+    Q_PROPERTY(double               loiterRadius                READ loiterRadius                                               CONSTANT)
 
     // The following properties relate to Orbit status
     Q_PROPERTY(bool             orbitActive     READ orbitActive        NOTIFY orbitActiveChanged)
@@ -358,6 +361,9 @@ public:
 
     /// Command vehicle to takeoff from current location
     Q_INVOKABLE void guidedModeTakeoff(double altitudeRelative);
+
+    /// Command vehicle to do a vtol takeoff
+    Q_INVOKABLE void guidedModeVtolTakeoff(double transAltRelative, double lat_loiter, double lon_loiter);
 
     /// @return The minimum takeoff altitude (relative) for guided takeoff.
     Q_INVOKABLE double minimumTakeoffAltitude();
@@ -543,6 +549,7 @@ public:
     bool supportsRadio                  () const;
     bool supportsJSButton               () const;
     bool supportsMotorInterference      () const;
+    bool supportsGuidedActionVtolTakeoff () const;
     bool supportsTerrainFrame           () const;
 
     void setGuidedMode(bool guidedMode);
@@ -614,6 +621,7 @@ public:
     QString         landFlightMode              () const;
     QString         takeControlFlightMode       () const;
     QString         followFlightMode            () const;
+    QString         vtolTakeoffFlightMode       () const;
     double          defaultCruiseSpeed          () const { return _defaultCruiseSpeed; }
     double          defaultHoverSpeed           () const { return _defaultHoverSpeed; }
     QString         firmwareTypeString          () const;
@@ -839,6 +847,7 @@ public:
 
     QGCCameraManager*           cameraManager       () { return _cameraManager; }
     QString                     hobbsMeter          ();
+    double                      loiterRadius        ();
 
     /// The vehicle is responsible for making the initial request for the Plan.
     /// @return: true: initial request is complete, false: initial request is still in progress;
@@ -875,6 +884,8 @@ public:
     void setActuatorsMetadata(uint8_t compid, const QString& metadataJsonFileName);
 
     HealthAndArmingCheckReport* healthAndArmingCheckReport() { return &_healthAndArmingCheckReport; }
+
+    void publishVtolTakeoffResult(bool success) { emit  vtolTakeoffResult(success);}
 
 public slots:
     void setVtolInFwdFlight                 (bool vtolInFwdFlight);
@@ -942,6 +953,7 @@ signals:
     void requiresGpsFixChanged          ();
     void haveMRSpeedLimChanged          ();
     void haveFWSpeedLimChanged          ();
+    void vtolTakeoffResult              (bool success);
 
     void firmwareVersionChanged         ();
     void firmwareCustomVersionChanged   ();
