@@ -485,6 +485,15 @@ public:
     void setJoystickEnabled         (bool enabled);
     void sendJoystickDataThreadSafe (float roll, float pitch, float yaw, float thrust, quint16 buttons);
 
+    /// Sends Channel override value
+    ///     @param rcChannel channel number 1-16
+    ///     @param pwmValue direct value 1000 - 2000
+    void rcChannelOverride(uint8_t rcChannel, uint16_t pwmValue);
+    void rcChannelsOverride(uint16_t* rcChannels);
+    /// Sends disabling of channel override
+    ///     @param rcChannel channel number 1-16
+    void disableChannelOverride(uint8_t rcChannel);
+
     // Property accesors
     int id() const{ return _id; }
     int compId() const{ return _compID; }
@@ -533,14 +542,14 @@ public:
 
     enum    GRIPPER_OPTIONS
     {
-    Gripper_release = GRIPPER_ACTION_RELEASE, 
+    Gripper_release = GRIPPER_ACTION_RELEASE,
     Gripper_grab    = GRIPPER_ACTION_GRAB,
     Invalid_option  = GRIPPER_ACTIONS_ENUM_END,
-    }; 
+    };
     Q_ENUM(GRIPPER_OPTIONS)
 
     void setGripperAction(GRIPPER_ACTIONS gripperAction);
-    Q_INVOKABLE void sendGripperAction(GRIPPER_OPTIONS gripperOption); 
+    Q_INVOKABLE void sendGripperAction(GRIPPER_OPTIONS gripperOption);
 
     bool fixedWing() const;
     bool multiRotor() const;
@@ -554,6 +563,7 @@ public:
     bool supportsJSButton               () const;
     bool supportsMotorInterference      () const;
     bool supportsTerrainFrame           () const;
+    bool supportsRcChannelOverride      () const;
 
     void setGuidedMode(bool guidedMode);
 
