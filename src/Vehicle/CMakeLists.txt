@@ -98,8 +98,10 @@ add_library(Vehicle
 	VehicleVibrationFactGroup.h
 	VehicleWindFactGroup.cc
 	VehicleWindFactGroup.h
-        VehicleHygrometerFactGroup.cc
-        VehicleHygrometerFactGroup.h
+	VehicleHygrometerFactGroup.cc
+	VehicleHygrometerFactGroup.h
+	VehicleRpmFactGroup.cc
+	VehicleRpmFactGroup.h
 	RemoteIDManager.h
 	RemoteIDManager.cc
 
