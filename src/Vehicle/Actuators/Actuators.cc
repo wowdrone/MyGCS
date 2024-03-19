@@ -200,6 +200,7 @@ void Actuators::parametersChanged()
     QList<ActuatorTesting::Actuator*> actuators;
     QSet<int> uniqueConfiguredFunctions;
     const Mixer::ActuatorTypes &actuatorTypes = _mixer.actuatorTypes();
+    int num_motor = 0;
     for (int function : allFunctions) {
         if (uniqueConfiguredFunctions.find(function) != uniqueConfiguredFunctions.end()) { // only add once
             continue;
@@ -221,9 +222,30 @@ void Actuators::parametersChanged()
                 const Mixer::ActuatorType& actuatorType = actuatorTypes[actuatorTypeName];
                 if (function >= actuatorType.functionMin && function <= actuatorType.functionMax) {
                     bool isMotor = ActuatorGeometry::typeFromStr(actuatorTypeName) == ActuatorGeometry::Type::Motor;
+                    bool isBidirectional = false;
+                    float min_value = actuatorType.values.min;
+                    float default_value = actuatorType.values.defaultVal;
+
+                    if(isMotor){
+                        QString bidirectional_param("CA_R_REV");
+                        quint8 bitset_bidirectional = getFact(bidirectional_param)->rawValue().toInt();
+                        quint8 is_bidi = (bitset_bidirectional >> num_motor) & 0b1;
+
+                        if(is_bidi == 1){
+
+                            min_value = -1.0f;
+                            default_value = 0.0f;
+                            isBidirectional = true;
+
+                        }
+                        num_motor++;
+
+                    }
+
+                    // qDebug() << "testinng: " << actuatorType.values.min << actuatorType.values.max << actuatorType.values.defaultVal;
                     actuators.append(
-                            new ActuatorTesting::Actuator(&_actuatorTest, label, actuatorType.values.min, actuatorType.values.max,
-                                    actuatorType.values.defaultVal, function, isMotor));
+                            new ActuatorTesting::Actuator(&_actuatorTest, label, min_value, actuatorType.values.max,
+                                    default_value, function, isMotor, isBidirectional));
                     found = true;
                     break;
                 }
@@ -232,7 +254,7 @@ void Actuators::parametersChanged()
                 const Mixer::ActuatorType& actuatorType = actuatorTypes["DEFAULT"];
                 actuators.append(
                         new ActuatorTesting::Actuator(&_actuatorTest, label, actuatorType.values.min, actuatorType.values.max,
-                                actuatorType.values.defaultVal, function, false));
+                                actuatorType.values.defaultVal, function, false, false));
             }
         }
     }
