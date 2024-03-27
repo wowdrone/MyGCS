@@ -635,10 +635,4 @@ void GeoFenceController::loadFlightPlanData()
 
     emit polygonBoundarySent(geoCoordinates);
 }
-bool GeoFenceController::loadUploadFlag()
-{
-    emit uploadFlagSent(true);
-
-    return true;
-}
 #endif
