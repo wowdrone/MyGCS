@@ -167,13 +167,41 @@ cmake_print_variables(APP_VERSION_STR)
 #######################################################
 
 set(QGC_RESOURCES
-    ${CMAKE_SOURCE_DIR}/qgcimages.qrc
-    ${CMAKE_SOURCE_DIR}/qgcresources.qrc
-    ${CMAKE_SOURCE_DIR}/qgroundcontrol.qrc
-    ${CMAKE_SOURCE_DIR}/resources/InstrumentValueIcons/InstrumentValueIcons.qrc
     ${CMAKE_SOURCE_DIR}/src/FirmwarePlugin/APM/APMResources.qrc
     ${CMAKE_SOURCE_DIR}/src/FirmwarePlugin/PX4/PX4Resources.qrc
 )
+
+if(QGC_CUSTOM_BUILD)
+    if(EXISTS ${CMAKE_SOURCE_DIR}/custom/qgroundcontrol.qrc)
+        message("Using custom qgroundcontrol.qrc")
+        list(APPEND QGC_RESOURCES ${CMAKE_SOURCE_DIR}/custom/qgroundcontrol.qrc)
+    else()
+        list(APPEND QGC_RESOURCES ${CMAKE_SOURCE_DIR}/qgroundcontrol.qrc)
+    endif()
+    if(EXISTS ${CMAKE_SOURCE_DIR}/custom/qgcresources.qrc)
+        message("Using custom qgcresources.qrc")
+        list(APPEND QGC_RESOURCES ${CMAKE_SOURCE_DIR}/custom/qgcresources.qrc)
+    else()
+        list(APPEND QGC_RESOURCES ${CMAKE_SOURCE_DIR}/qgcresources.qrc)
+    endif()
+    if(EXISTS ${CMAKE_SOURCE_DIR}/custom/qgcimages.qrc)
+        message("Using custom qgcimages.qrc")
+        list(APPEND QGC_RESOURCES ${CMAKE_SOURCE_DIR}/custom/qgcimages.qrc)
+    else()
+        list(APPEND QGC_RESOURCES ${CMAKE_SOURCE_DIR}/qgcimages.qrc)
+    endif()
+    if(EXISTS ${CMAKE_SOURCE_DIR}/custom/InstrumentValueIcons.qrc)
+        message("Using custom InstrumentValueIcons.qrc")
+        list(APPEND QGC_RESOURCES ${CMAKE_SOURCE_DIR}/custom/InstrumentValueIcons.qrc)
+    else()
+        list(APPEND QGC_RESOURCES ${CMAKE_SOURCE_DIR}/resources/InstrumentValueIcons/InstrumentValueIcons.qrc)
+    endif()
+else()
+    list(APPEND QGC_RESOURCES ${CMAKE_SOURCE_DIR}/qgroundcontrol.qrc)
+    list(APPEND QGC_RESOURCES ${CMAKE_SOURCE_DIR}/qgcresources.qrc)
+    list(APPEND QGC_RESOURCES ${CMAKE_SOURCE_DIR}/qgcimages.qrc)
+    list(APPEND QGC_RESOURCES ${CMAKE_SOURCE_DIR}/resources/InstrumentValueIcons/InstrumentValueIcons.qrc)
+endif()
 
 if(CONFIG_UTM_ADAPTER)
     list(APPEND QGC_RESOURCES ${CMAKE_SOURCE_DIR}/src/UTMSP/utmsp.qrc)
@@ -192,6 +220,16 @@ elseif(MACOS)
     set(app_icon_macos "${CMAKE_SOURCE_DIR}/resources/icons/macx.icns")
     set_source_files_properties(${app_icon_macos} PROPERTIES MACOSX_PACKAGE_LOCATION "Resources")
     list(APPEND QGC_RESOURCES ${app_icon_macos})
+endif()
+
+#######################################################
+#               QGroundControl Custom Build
+#######################################################
+
+if(EXISTS ${CMAKE_SOURCE_DIR}/custom)
+    set(QGC_CUSTOM_BUILD ON)
+    message("Custom build detected")
+    add_subdirectory(custom)
 endif()
 
 #######################################################
@@ -257,6 +295,7 @@ elseif(ANDROID)
 endif()
 
 target_link_libraries(${PROJECT_NAME} PRIVATE qgc)
+target_link_libraries(${PROJECT_NAME} PRIVATE Custom)
 
 #######################################################
 #               Testing Configuration
