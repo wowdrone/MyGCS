@@ -43,6 +43,10 @@
 #include "VehicleTemperatureFactGroup.h"
 #include "VehicleVibrationFactGroup.h"
 #include "VehicleWindFactGroup.h"
+#ifdef QGC_UTM_ADAPTER
+#include "UTMSPVehicle.h"
+#include "UTMSPManager.h"
+#endif
 
 class Actuators;
 class AutoPilotPlugin;
