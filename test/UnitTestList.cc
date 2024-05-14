@@ -35,6 +35,9 @@
 // Geo
 #include "GeoTest.h"
 
+// GPS
+#include "GpsTest.h"
+
 // MAVLink
 #include "StatusTextHandlerTest.h"
 #include "SigningTest.h"
@@ -123,6 +126,9 @@ int runTests(bool stress, QStringView unitTestOptions)
 
 	// Geo
     // UT_REGISTER_TEST(GeoTest)
+
+    // GPS
+    // UT_REGISTER_TEST(GpsTest)
 
     // MAVLink
     UT_REGISTER_TEST(StatusTextHandlerTest)

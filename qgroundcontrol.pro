@@ -678,8 +678,8 @@ HEADERS += \
     src/GPS/Drivers/src/ubx.h \
     src/GPS/Drivers/src/sbf.h \
     src/GPS/GPSManager.h \
-    src/GPS/GPSPositionMessage.h \
     src/GPS/GPSProvider.h \
+    src/GPS/GPSRtk.h \
     src/GPS/RTCMMavlink.h \
     src/GPS/definitions.h \
     src/GPS/satellite_info.h \
@@ -941,6 +941,7 @@ SOURCES += \
     src/GPS/Drivers/src/sbf.cpp \
     src/GPS/GPSManager.cc \
     src/GPS/GPSProvider.cc \
+    src/GPS/GPSRtk.cc \
     src/GPS/RTCMMavlink.cc
 }
 
