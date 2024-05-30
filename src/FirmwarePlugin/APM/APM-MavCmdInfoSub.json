@@ -4,5 +4,9 @@
     "fileType":  "MavCmdInfo",
 
     "mavCmdInfo": [
+        {
+            "id":           115,
+            "comment":      "MAV_CMD_CONDITION_YAW"
+        }
     ]
 }
