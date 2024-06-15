@@ -7,16 +7,16 @@ option(QGC_UTM_ADAPTER "Enable UTM Adapter" OFF)
 if(QGC_UTM_ADAPTER)
     message(STATUS "UTMSP is Initialized")
 
-    if(NOT nlohmann_json_FOUND)
-        message(STATUS "UTMSP: Fetching nlohmann/json")
-        include(FetchContent)
-        FetchContent_Declare(json
-                GIT_REPOSITORY https://github.com/nlohmann/json.git
-                GIT_TAG v3.11.3
-                GIT_SHALLOW TRUE
-        )
-        FetchContent_MakeAvailable(json)
-    endif()
+    # if(NOT nlohmann_json_FOUND)
+    #     message(STATUS "UTMSP: Fetching nlohmann/json")
+    #     include(FetchContent)
+    #     FetchContent_Declare(json
+    #             GIT_REPOSITORY https://github.com/nlohmann/json.git
+    #             GIT_TAG v3.11.3
+    #             GIT_SHALLOW TRUE
+    #     )
+    #     FetchContent_MakeAvailable(json)
+    # endif()
 
     find_package(Qt6 REQUIRED COMPONENTS Network Positioning Qml)
     find_package(Threads REQUIRED)
