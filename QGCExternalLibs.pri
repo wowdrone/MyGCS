@@ -227,7 +227,7 @@ contains (DEFINES, DISABLE_ZEROCONF) {
 }
 
 # UTM Adapter Enabled
-contains (DEFINES, CONFIG_UTM_ADAPTER){
+contains (DEFINES, QGC_UTM_ADAPTER){
     INCLUDEPATH += $$PWD/libs/libevents/libevents/libs/cpp/parse/nlohmann_json/include
     LIBS += -lboost_system -lboost_thread -lssl -lcrypto
 }
