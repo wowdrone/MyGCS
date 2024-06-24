@@ -266,7 +266,7 @@ endif()
 set_target_properties(${PROJECT_NAME}
     PROPERTIES
         QT_RESOURCE_PREFIX "/qgc"
-        OUTPUT_NAME ${QGC_APP_NAME}
+        OUTPUT_NAME ${CMAKE_PROJECT_NAME}
 )
 
 if(WIN32)
@@ -288,7 +288,7 @@ elseif(MACOS)
         PROPERTIES
             MACOSX_BUNDLE TRUE
             MACOSX_BUNDLE_INFO_PLIST "${CMAKE_SOURCE_DIR}/deploy/mac/MacOSXBundleInfo.plist.in"
-            MACOSX_BUNDLE_BUNDLE_NAME "${QGC_APP_NAME}"
+            MACOSX_BUNDLE_BUNDLE_NAME "${CMAKE_PROJECT_NAME}"
             MACOSX_BUNDLE_BUNDLE_VERSION "${PROJECT_VERSION}"
             MACOSX_BUNDLE_COPYRIGHT "${QGC_APP_COPYRIGHT}"
             MACOSX_BUNDLE_GUI_IDENTIFIER "${QGC_BUNDLE_ID}"
@@ -340,7 +340,7 @@ elseif(LINUX)
 endif()
 
 add_compile_definitions(
-    QGC_APP_NAME="${QGC_APP_NAME}"
+    QGC_APP_NAME="${CMAKE_PROJECT_NAME}"
     QGC_ORG_NAME="${QGC_ORG_NAME}"
     QGC_ORG_DOMAIN="${QGC_ORG_DOMAIN}"
     QGC_APP_VERSION_STR="${QGC_APP_VERSION_STR}"
@@ -362,15 +362,17 @@ if(QGC_BUILD_TESTING)
     target_link_libraries(${PROJECT_NAME} PRIVATE qgctest)
 endif()
 
-#######################################################
-#		Install Configuration
-#######################################################
-
 qt_import_plugins(${PROJECT_NAME}
     INCLUDE Qt6::QSvgPlugin
     EXCLUDE_BY_TYPE geoservices
     INCLUDE_BY_TYPE sqldrivers Qt6::QSQLiteDriverPlugin
 )
+
+#######################################################
+#		Install Configuration
+#######################################################
+
+include(InstallRequiredSystemLibraries)
 
 install(
     TARGETS ${PROJECT_NAME}
