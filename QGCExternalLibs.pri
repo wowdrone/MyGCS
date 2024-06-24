@@ -227,9 +227,11 @@ contains (DEFINES, DISABLE_ZEROCONF) {
 }
 
 # UTM Adapter Enabled
-contains (DEFINES, CONFIG_UTM_ADAPTER){
+contains (DEFINES, QGC_CONFIG_UTM_ADAPTER){
+    message("Updating git submodule for libevents...")
+    system(cd $$PWD/libs/libevents/libevents/libs/cpp/parse/nlohmann_json && git submodule update --init --recursive )
+
     INCLUDEPATH += $$PWD/libs/libevents/libevents/libs/cpp/parse/nlohmann_json/include
-    LIBS += -lboost_system -lboost_thread -lssl -lcrypto
 }
 
 HEADERS += \

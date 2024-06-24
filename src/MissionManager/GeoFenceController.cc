@@ -604,7 +604,7 @@ bool GeoFenceController::isEmpty(void) const
 
 }
 
-#ifdef CONFIG_UTM_ADAPTER
+#ifdef QGC_UTM_ADAPTER
 void GeoFenceController::loadFlightPlanData()
 {
     QJsonArray jsonPolygonArray;
@@ -634,11 +634,5 @@ void GeoFenceController::loadFlightPlanData()
     }
 
     emit polygonBoundarySent(geoCoordinates);
-}
-bool GeoFenceController::loadUploadFlag()
-{
-    emit uploadFlagSent(true);
-
-    return true;
 }
 #endif

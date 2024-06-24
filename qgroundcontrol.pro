@@ -1301,7 +1301,7 @@ LinuxBuild {
 }
 
 # UTM Adapter Enabled
-contains (DEFINES, CONFIG_UTM_ADAPTER) {
+contains (DEFINES, QGC_UTM_ADAPTER) {
     message("UTM enabled")
 
     #-- To test with UTM Adapter Enabled Flag
