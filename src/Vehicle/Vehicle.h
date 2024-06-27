@@ -43,6 +43,10 @@
 #include "VehicleTemperatureFactGroup.h"
 #include "VehicleVibrationFactGroup.h"
 #include "VehicleWindFactGroup.h"
+#ifdef QGC_UTM_ADAPTER
+#include "UTMSPVehicle.h"
+#include "UTMSPManager.h"
+#endif
 
 class Actuators;
 class AutoPilotPlugin;
@@ -77,7 +81,7 @@ class UASMessage;
 class VehicleBatteryFactGroup;
 class VehicleObjectAvoidance;
 class QGCToolbox;
-#ifdef CONFIG_UTM_ADAPTER
+#ifdef QGC_UTM_ADAPTER
 class UTMSPVehicle;
 #endif
 #ifndef OPAQUE_PTR_VEHICLE
@@ -1181,7 +1185,7 @@ private:
     VehicleObjectAvoidance*         _objectAvoidance                = nullptr;
     Autotune*                       _autotune                       = nullptr;
 
-#ifdef CONFIG_UTM_ADAPTER
+#ifdef QGC_UTM_ADAPTER
     UTMSPVehicle*                    _utmspVehicle                    = nullptr;
 #endif
 

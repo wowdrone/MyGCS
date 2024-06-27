@@ -51,7 +51,7 @@
 #include "VideoSettings.h"
 #include <DeviceInfo.h>
 
-#ifdef CONFIG_UTM_ADAPTER
+#ifdef QGC_UTM_ADAPTER
 #include "UTMSPVehicle.h"
 #include "UTMSPManager.h"
 #endif
@@ -175,7 +175,7 @@ Vehicle::Vehicle(LinkInterface*             link,
         _settingsManager->videoSettings()->lowLatencyMode()->setRawValue(true);
     }
 
-#ifdef CONFIG_UTM_ADAPTER
+#ifdef QGC_UTM_ADAPTER
     UTMSPManager* utmspManager = _toolbox->utmspManager();
     if (utmspManager) {
         _utmspVehicle = utmspManager->instantiateVehicle(*this);
@@ -477,7 +477,7 @@ Vehicle::~Vehicle()
     delete _autopilotPlugin;
     _autopilotPlugin = nullptr;
 
-#ifdef CONFIG_UTM_ADAPTER
+#ifdef QGC_UTM_ADAPTER
     delete _utmspVehicle;
 #endif
 }
