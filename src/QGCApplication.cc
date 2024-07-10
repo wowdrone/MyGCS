@@ -101,9 +101,9 @@
 #include "CustomActionManager.h"
 #include "AudioOutput.h"
 #include "JsonHelper.h"
-// #ifdef QGC_VIEWER3D
+#ifndef QGC_DISABLE_VIEWER3D
 #include "Viewer3DManager.h"
-// #endif
+#endif
 #ifndef NO_SERIAL_LINK
 #include "FirmwareUpgradeController.h"
 #include "SerialLink.h"
@@ -353,9 +353,9 @@ void QGCApplication::init()
     qmlRegisterSingletonType<ScreenToolsController>  ("QGroundControl.ScreenToolsController", 1, 0, "ScreenToolsController",  screenToolsControllerSingletonFactory);
 
 
-    // #ifdef QGC_VIEWER3D
+#ifndef QGC_DISABLE_VIEWER3D
     Viewer3DManager::registerQmlTypes();
-    // #endif
+#endif
 
     qmlRegisterUncreatableType<Autotune>              ("QGroundControl.Vehicle",   1, 0, "Autotune",               "Reference only");
     qmlRegisterUncreatableType<RemoteIDManager>       ("QGroundControl.Vehicle",   1, 0, "RemoteIDManager",        "Reference only");

@@ -13,7 +13,9 @@
 #include "QGCApplication.h"
 #include "FlightModesComponent.h"
 #include "PX4RadioComponent.h"
+#ifndef DISABLE_PX4TUNINGCOMPONENT
 #include "PX4TuningComponent.h"
+#endif
 #include "PowerComponent.h"
 #include "SafetyComponent.h"
 #include "SensorsComponent.h"
@@ -104,9 +106,11 @@ const QVariantList& PX4AutoPilotPlugin::vehicleComponents(void)
                 _safetyComponent->setupTriggerSignals();
                 _components.append(QVariant::fromValue(static_cast<VehicleComponent*>(_safetyComponent)));
 
-                _tuningComponent = new PX4TuningComponent(_vehicle, this, this);
-                _tuningComponent->setupTriggerSignals();
-                _components.append(QVariant::fromValue(static_cast<VehicleComponent*>(_tuningComponent)));
+                #ifndef DISABLE_PX4TUNINGCOMPONENT
+                    _tuningComponent = new PX4TuningComponent(_vehicle, this, this);
+                    _tuningComponent->setupTriggerSignals();
+                    _components.append(QVariant::fromValue(static_cast<VehicleComponent*>(_tuningComponent)));
+                #endif
 
                 if(_vehicle->parameterManager()->parameterExists(_vehicle->id(), "SYS_VEHICLE_RESP")) {
                     _flightBehavior = new PX4FlightBehavior(_vehicle, this, this);
