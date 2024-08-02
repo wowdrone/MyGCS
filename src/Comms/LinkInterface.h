@@ -33,7 +33,7 @@ public:
     Q_INVOKABLE virtual void disconnect() = 0;
 
     virtual bool isConnected() const = 0;
-    virtual bool isLogReplay() { return false; }
+    virtual bool isLogReplay() const { return false; }
 
     SharedLinkConfigurationPtr linkConfiguration() { return m_config; }
     uint8_t mavlinkChannel() const;
