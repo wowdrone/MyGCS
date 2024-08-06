@@ -9,25 +9,15 @@
 
 #pragma once
 
-#include <QtCore/QObject>
-#include <QtCore/QLoggingCategory>
+#include "UnitTest.h"
 
-Q_DECLARE_LOGGING_CATEGORY(GPSManagerLog)
-
-class GPSRtk;
-
-class GPSManager : public QObject
+class GpsTest : public UnitTest
 {
     Q_OBJECT
 
 public:
-    GPSManager(QObject *parent = nullptr);
-    ~GPSManager();
+    GpsTest();
 
-    static GPSManager *instance();
-
-    GPSRtk *gpsRtk() { return m_gpsRtk; }
-
-private:
-    GPSRtk *m_gpsRtk = nullptr;
+private slots:
+    void _testGps();
 };
