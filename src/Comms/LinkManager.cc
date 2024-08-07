@@ -919,7 +919,7 @@ void LinkManager::_updateSerialPorts()
     {
         QString port = info.systemLocation().trimmed();
         _commPortList += port;
-        _commPortDisplayList += SerialConfiguration::cleanPortDisplayname(port);
+        _commPortDisplayList += SerialConfiguration::cleanPortDisplayName(port);
     }
 }
 
