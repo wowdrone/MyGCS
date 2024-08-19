@@ -15,6 +15,7 @@
 #include "FirmwarePluginManager.h"
 #include "AppSettings.h"
 #include "PositionManager.h"
+#include "QGCMapEngineManager.h"
 #ifndef NO_SERIAL_LINK
 #include "GPSManager.h"
 #endif
@@ -73,7 +74,7 @@ void QGroundControlQmlGlobal::setToolbox(QGCToolbox* toolbox)
 
     _linkManager            = toolbox->linkManager();
     _multiVehicleManager    = toolbox->multiVehicleManager();
-    _mapEngineManager       = toolbox->mapEngineManager();
+    _mapEngineManager       = QGCMapEngineManager::instance();
     _qgcPositionManager     = toolbox->qgcPositionManager();
     _missionCommandTree     = toolbox->missionCommandTree();
     _videoManager           = toolbox->videoManager();
